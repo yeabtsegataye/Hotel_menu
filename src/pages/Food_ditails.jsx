@@ -105,7 +105,7 @@ export const FoodDetails = () => {
 
         {/* Image positioned at the center of the end of the blue curve */}
         <motion.img
-          src={food.image || F_img}
+          src={`${import.meta.env.VITE_API_URL}/${food.image}` || F_img}
           alt={food.name}
           className="w-64 h-64 rounded-full shadow-lg border-4 border-white transform -translate-y-12 mt-16"
           whileHover={{ scale: 1.1 }}

@@ -31,6 +31,7 @@ export const Menu = () => {
   useEffect(() => {
     if (category?.length) {
       setCategories(category);
+      console.log(categories,'cats')
       setSelectedCategory(category[0]?.id);
     } else if (categoryData?.length) {
       setCategories(categoryData);
@@ -144,7 +145,7 @@ export const Menu = () => {
             >
               {item?.image ? (
                 <img
-                  src={item.image}
+                  src={`${import.meta.env.VITE_API_URL}/${item.image}`}
                   alt={item.name || "Unnamed Food Item"}
                   className="w-full h-52 object-cover"
                   onError={(e) => {
