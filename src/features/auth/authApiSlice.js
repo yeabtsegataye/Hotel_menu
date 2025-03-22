@@ -74,9 +74,19 @@ export const authApiSlice = apiSlice.injectEndpoints({
       }),
     }),
 
+    ////////////////////////////////
+    addorder: builder.mutation({
+      query: (orders) => ({
+        url: '/order/add',
+        method: 'POST',
+        body: orders,
+        credentials: 'include'
+      })
+    }),
+
   })
 })
-
+  ////////////////////////////////
 export const {
   useLoginMutation,
   useSignupMutation,
@@ -85,5 +95,6 @@ export const {
   useLogoutMutation,
   useGetcatQuery,
   useGetfoodQuery,
-  useGetfoodbyidQuery
+  useGetfoodbyidQuery,
+  useAddorderMutation
 } = authApiSlice;

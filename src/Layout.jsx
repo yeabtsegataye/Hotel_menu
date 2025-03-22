@@ -1,10 +1,12 @@
-import { Routes, Route } from "react-router-dom"; 
+import { Routes, Route, useParams } from "react-router-dom"; 
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { Menu } from "./pages/Menu";
 import { FoodDetails } from "./pages/Food_ditails";
 
 function Layout() {
+    const { id } = useParams();
+  
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header - Fixed at the top */}

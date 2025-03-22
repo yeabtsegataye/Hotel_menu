@@ -1,20 +1,23 @@
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { GoogleOAuthProvider } from "@react-oauth/google"; // Import GoogleOAuthProvider
 import { ChakraProvider } from "@chakra-ui/react";
 import { Provider } from "react-redux";
 import { store } from "./app/storage.js";
+import { CartProvider } from "./context/CartContext";
 
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  <React.StrictMode>
     <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
-      {/* <ChakraProvider> */}
+      <ChakraProvider>
         <Provider store={store}>
-          <App />
+          <CartProvider>
+            <App />
+          </CartProvider>
         </Provider>
-      {/* </ChakraProvider> */}
+      </ChakraProvider>
     </GoogleOAuthProvider>
-  </StrictMode>
+  </React.StrictMode>
 );

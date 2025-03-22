@@ -3,10 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaArrowLeft } from "react-icons/fa";
 import { useGetfoodbyidQuery } from "../features/auth/authApiSlice"; // Import your API slice
-import F_img from '../assets/food.png'
+import { useCart } from "../context/CartContext"; // Import the useCart hook
+import F_img from '../assets/food.png';
+
 export const FoodDetails = () => {
   const { id } = useParams(); // Get food ID from URL params
   const navigate = useNavigate();
+  const { addToCart } = useCart(); // Access the addToCart function from the context
 
   // Fetch food details using the API
   const {
@@ -28,7 +31,7 @@ export const FoodDetails = () => {
         id: comments.length + 1,
         user: "Current User",
         comment: newComment,
-        avatar: {F_img},
+        avatar: F_img,
       };
       setComments([...comments, comment]);
       setNewComment("");
@@ -41,6 +44,21 @@ export const FoodDetails = () => {
       setSelectedIngredients(selectedIngredients.filter((id) => id !== ingredientId));
     } else {
       setSelectedIngredients([...selectedIngredients, ingredientId]);
+    }
+  };
+
+  // Handle adding the food item to the cart
+  const handleAddToCart = () => {
+    if (food) {
+      const itemToAdd = {
+        id: food.id,
+        name: food.name,
+        price: parseFloat(food.price),
+        image: food.image || F_img,
+        quantity: 1, // Default quantity
+        selectedIngredients, // Include selected ingredients
+      };
+      addToCart(itemToAdd); // Add the item to the cart
     }
   };
 
@@ -76,7 +94,7 @@ export const FoodDetails = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="relative min-h-screen flex flex-col items-center bg-gray-100 pb-10 overflow-hidden"
+      className="relative min-h-screen mt-16 flex flex-col items-center bg-gray-100 pb-10 overflow-hidden"
     >
       {/* Curved Blue Background */}
       <div className="relative w-full h-64 bg-blue-400 flex flex-col justify-center items-center rounded-b-[50%]">
@@ -116,6 +134,7 @@ export const FoodDetails = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="w-12 h-12 flex items-center justify-center bg-blue-500 text-white text-2xl rounded-full shadow-lg hover:bg-blue-600 transition-all duration-200 ease-in-out transform hover:shadow-xl"
+            onClick={handleAddToCart} // Call handleAddToCart when clicked
           >
             +
           </motion.button>

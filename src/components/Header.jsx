@@ -2,21 +2,24 @@ import React, { useState } from "react";
 import { FaShoppingCart, FaUser, FaTimes, FaBook } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Cart from "./Cart"; // Import Cart component
-import {Link} from 'react-router-dom'
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+
 export const Header = () => {
   const [showCart, setShowCart] = useState(false);
+  const { cart } = useCart(); // Get cart state
 
   return (
-    <header className="bg-blue-400 text-white p-4 shadow-lg">
+    <header className="fixed top-0 left-0 w-full mb-24 bg-blue-400 text-white p-4 shadow-lg z-50">
       <div className="container mx-auto flex justify-between items-center">
         {/* App Name */}
         <div className="text-2xl font-bold">My Restaurant</div>
 
         {/* Icons */}
         <div className="flex items-center space-x-6">
-        <Link to={'/myOrder'}>
-        <FaBook className="text-2xl cursor-pointer hover:text-blue-200 transition-colors"/>
-        </Link >
+          <Link to={"/myOrder"}>
+            <FaBook className="text-2xl cursor-pointer hover:text-blue-200 transition-colors" />
+          </Link>
 
           {/* Cart Icon */}
           <div className="relative">
@@ -24,14 +27,16 @@ export const Header = () => {
               className="text-3xl cursor-pointer hover:text-blue-200 transition-colors"
               onClick={() => setShowCart(true)}
             />
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
-              3 {/* Cart item count */}
-            </span>
+            {cart.length > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-2">
+                {cart.reduce((total, item) => total + item.quantity, 0)}
+              </span>
+            )}
           </div>
 
           {/* User Icon */}
-          <Link to={'/auth'}>
-           <FaUser className="text-2xl cursor-pointer hover:text-blue-200 transition-colors" />
+          <Link to={"/auth"}>
+            <FaUser className="text-2xl cursor-pointer hover:text-blue-200 transition-colors" />
           </Link>
         </div>
       </div>
@@ -47,7 +52,6 @@ export const Header = () => {
         >
           {/* Close Button */}
           <div className="flex justify-between items-center p-4 bg-blue-400 shadow-md">
-            {/* <h2 className="text-xl font-bold">Your Cart</h2> */}
             <FaTimes
               className="text-2xl cursor-pointer text-gray-600 hover:text-gray-800"
               onClick={() => setShowCart(false)}

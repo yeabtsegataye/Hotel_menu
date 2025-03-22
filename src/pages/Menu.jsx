@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
   useGetfoodQuery,
   useGetcatQuery,
 } from "../features/auth/authApiSlice.js";
 import { ClipLoader } from "react-spinners"; // Import a spinner from react-spinners
-import F_img from '../assets/food.png'
+import F_img from "../assets/food.png";
+import { useCart } from "../context/CartContext";
 
 export const Menu = () => {
+  const { addToCart } = useCart(); // Access cart context
+  const [searchParams] = useSearchParams();
+
+  const orderTable = searchParams.get("order_table");
+  const hotel = searchParams.get("hotel");
+
   const { id } = useParams(); // Get hotelID from URL params
   const [categories, setCategories] = useState([]);
   const category = useSelector((state) => state.auth.category);
@@ -56,6 +63,14 @@ export const Menu = () => {
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Function to truncate text
+  const truncateText = (text, maxLength) => {
+    if (text.length > maxLength) {
+      return text.slice(0, maxLength) + "...";
+    }
+    return text;
+  };
+
   // Loading and error states
   if (isCategoryLoading || isFoodLoading) {
     return (
@@ -75,7 +90,7 @@ export const Menu = () => {
   }
 
   return (
-    <div className="p-4 font-sans">
+    <div className="p-4 font-sans mt-16">
       {/* Title */}
       <h1 className="pb-5 text-3xl text-gray-800 text-left font-[Poppins] tracking-wide">
         Select <span className="text-blue-400 font-extrabold">Food</span> And{" "}
@@ -120,15 +135,20 @@ export const Menu = () => {
       {/* Food List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-8">
         {filteredFoodItems.map((item) => (
-          <Link key={item.id} to={`/details/${item.id}`}>
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow">
+          <div
+            key={item.id}
+            className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow"
+          >
+            <Link
+              to={`/details/${item.id}?order_table=${orderTable}&hotel=${hotel}`}
+            >
               {item?.image ? (
                 <img
                   src={item.image}
                   alt={item.name || "Unnamed Food Item"}
                   className="w-full h-52 object-cover"
                   onError={(e) => {
-                    e.target.src ={F_img}; // Fallback if image fails to load
+                    e.target.src = F_img; // Fallback if image fails to load
                   }}
                 />
               ) : (
@@ -138,36 +158,41 @@ export const Menu = () => {
                   className="w-full h-52 object-cover"
                 />
               )}
+            </Link>
 
-              {/* Food Details */}
-              <div className="p-5">
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                  {item.name}
-                </h3>
-                <p className="text-gray-600 text-lg mb-4">{item.description}</p>
+            {/* Food Details */}
+            <div className="p-5">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                {truncateText(item.name, 35)} {/* Truncate name */}
+              </h3>
+              <p className="text-gray-600 text-lg mb-4">
+                {truncateText(item.description, 50)} {/* Truncate description */}
+              </p>
 
-                {/* Rating */}
-                <div className="flex items-center mb-4">
-                  <span className="text-yellow-500 text-xl">
-                    {"★".repeat(Math.floor(item.rating))}
-                    {item.rating % 1 !== 0 ? "☆" : ""}
-                  </span>
-                  <span className="ml-2 text-lg text-gray-700">
-                    {item?.rating?.toFixed(1)}
-                  </span>
-                </div>
+              {/* Rating */}
+              <div className="flex items-center mb-4">
+                <span className="text-yellow-500 text-xl">
+                  {"★".repeat(Math.floor(item.rating))}
+                  {item.rating % 1 !== 0 ? "☆" : ""}
+                </span>
+                <span className="ml-2 text-lg text-gray-700">
+                  {item?.rating?.toFixed(1)}
+                </span>
+              </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold text-gray-900">
-                    {item.price}
-                  </span>
-                  <button className="bg-blue-500 text-white text-lg px-5 py-2 rounded-full font-semibold hover:bg-blue-600 transition-colors">
-                    Add
-                  </button>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xl font-bold text-gray-900">
+                  {item.price}
+                </span>
+                <button
+                  onClick={() => addToCart(item)}
+                  className="bg-blue-500 text-white px-4 py-2 mt-2 rounded hover:bg-blue-600"
+                >
+                  Add to Cart
+                </button>
               </div>
             </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
