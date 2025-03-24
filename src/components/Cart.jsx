@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useCart } from "../context/CartContext"; // Adjust the import path as necessary
 import { useToast } from "@chakra-ui/react";
 import { useAddorderMutation } from "../features/auth/authApiSlice";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Spinner } from "@chakra-ui/react";
+import { io } from "socket.io-client";
 
 const Cart = () => {
   const toast = useToast();
@@ -15,6 +16,8 @@ const Cart = () => {
   const orderTable = searchParams.get("order_table");
   const id = searchParams.get("hotel");
   const navigate = useNavigate();
+  const [socket, setSocket] = useState(null);
+
   console.log(id, orderTable);
 
   const taxRate = 0.15;
@@ -24,6 +27,48 @@ const Cart = () => {
   );
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
+
+  // Initialize Socket Connection
+  useEffect(() => {
+    if (id) {
+      const newSocket = io("http://localhost:8000", {
+        withCredentials: true,
+        transports: ["websocket"],
+        query: {
+          hotelId: id, // Pass hotelId from URL
+          userId: localStorage.getItem("id"), // Pass userId from localStorage
+          type: "menu",
+        },
+      });
+
+      newSocket.on("connect", () => {
+        console.log("Connected to WebSocket with ID:", newSocket.id);
+      });
+
+      newSocket.on("connect_error", (err) => {
+        console.error("WebSocket Connection Error:", err);
+      });
+
+      // Listen for order updates
+      newSocket.on("orderPlaced", (newOrder) => {
+        console.log("New order placed:", newOrder);
+        toast({
+          title: "New order placed!",
+          description: `Order ID: ${newOrder.id}`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      });
+
+      setSocket(newSocket);
+
+      // Cleanup on unmount
+      return () => {
+        newSocket.disconnect();
+      };
+    }
+  }, [id]);
 
   const handleIncreaseQuantity = (id) => {
     const item = cart.find((item) => item.id === id);
@@ -42,7 +87,7 @@ const Cart = () => {
   const handleRemoveItem = (id) => {
     removeFromCart(id);
   };
-  //////////////////////////
+
   const handle_submit = async () => {
     if (!id || !orderTable) {
       toast({
@@ -53,12 +98,14 @@ const Cart = () => {
       });
       return;
     }
+    const userID = localStorage.getItem("id");
 
     const orderData = cart.map((item) => ({
       foodId: item.id,
       quantity: item.quantity,
       orderTable: orderTable,
       hotelId: parseInt(id, 10),
+      userID,
     }));
 
     try {
@@ -72,6 +119,11 @@ const Cart = () => {
           duration: 3000,
           isClosable: true,
         });
+
+        // Emit orderPlaced event to the server
+        if (socket) {
+          socket.emit("orderPlaced", response.orders);
+        }
 
         // Check for existing orders in localStorage
         const existingOrders = localStorage.getItem("orders");
